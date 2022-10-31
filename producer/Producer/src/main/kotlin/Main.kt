@@ -8,9 +8,9 @@ import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.serialization.StringSerializer
 import java.util.*
 
-private fun createProducer(brokers: String): Producer<String, String> {
+private fun createProducer(broker: String): Producer<String, String> {
     val props = Properties()
-    props["bootstrap.servers"] = brokers
+    props["bootstrap.servers"] = broker
     props["key.serializer"] = StringSerializer::class.java.canonicalName
     props["value.serializer"] = StringSerializer::class.java.canonicalName
     return KafkaProducer<String, String>(props)
@@ -27,12 +27,15 @@ data class InputData(
     val timeToProcess: Int
 )
 
+val inputTopic = "input-topic"
+val broker = "localhost:9092"
+
 fun main() {
-    val producer = createProducer("localhost:9092")
+    val producer = createProducer(broker)
     for (i in 0..100000) {
         sendInputData(
             producer,
-            "topic-1",
+            inputTopic,
             jsonMapper.writeValueAsString(
                 InputData(i, (1..10).random())
             )
