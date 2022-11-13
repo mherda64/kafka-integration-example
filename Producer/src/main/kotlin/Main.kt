@@ -24,6 +24,7 @@ val jsonMapper = ObjectMapper().apply {
 
 data class InputData(
     val index: Int,
+    val runId: String,
     val timeToProcess: Int
 )
 
@@ -32,12 +33,14 @@ val broker = "localhost:9092"
 
 fun main() {
     val producer = createProducer(broker)
-    for (i in 0..100000) {
+    val runId = UUID.randomUUID().toString()
+    println("Producer Instance $runId")
+    for (i in 0..100_000) {
         sendInputData(
             producer,
             inputTopic,
             jsonMapper.writeValueAsString(
-                InputData(i, (1..10).random())
+                InputData(i, runId, (1..10).random())
             )
         )
     }

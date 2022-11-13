@@ -38,11 +38,13 @@ val jsonMapper = ObjectMapper().apply {
 
 data class InputData(
     val index: Int,
+    val runId: String,
     val timeToProcess: Int
 )
 
 data class OutputData(
     val index: Int,
+    val runId: String,
     val timeToProcess: Int,
     val processedBy: String
 )
@@ -57,7 +59,7 @@ fun main() {
     val consumer = createConsumer(broker, processorConsumerGroup)
 
     val instance = UUID.randomUUID().toString()
-    println("Instance: ${instance}")
+    println("Processor Instance: $instance")
 
     consumer.subscribe(listOf(inputTopic))
 
@@ -68,11 +70,11 @@ fun main() {
         records.iterator().forEach {
             val inputData = jsonMapper.readValue(it.value(), InputData::class.java)
             println("Read input data index [${inputData.index}], processing [${inputData.timeToProcess}] seconds")
-            Thread.sleep((inputData.timeToProcess * 1000).toLong())
+            Thread.sleep((inputData.timeToProcess).toLong())
             println("Processed input data index [${inputData.index}], sending to output topic")
             producer.send(ProducerRecord(
                 outputTopic,
-                jsonMapper.writeValueAsString(OutputData(inputData.index, inputData.timeToProcess, instance))
+                jsonMapper.writeValueAsString(OutputData(inputData.index, inputData.runId, inputData.timeToProcess, instance))
             ))
         }
     }

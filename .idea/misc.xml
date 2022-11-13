@@ -2,7 +2,8 @@
 <project version="4">
   <component name="ExternalStorageConfigurationManager" enabled="true" />
   <component name="FrameworkDetectionExcludesConfiguration">
-    <file type="web" url="file://$PROJECT_DIR$/processor/Processor" />
-    <file type="web" url="file://$PROJECT_DIR$/producer/Producer" />
+    <file type="web" url="file://$PROJECT_DIR$/Processor" />
+    <file type="web" url="file://$PROJECT_DIR$/Producer" />
+    <file type="web" url="file://$PROJECT_DIR$/Validator" />
   </component>
 </project>

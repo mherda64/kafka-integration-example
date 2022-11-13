@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <bytecodeTargetLevel>
+      <module name="org.example.Processor.main" target="17" />
+      <module name="org.example.Processor.test" target="17" />
+      <module name="org.mherda.Producer.main" target="17" />
+      <module name="org.mherda.Producer.test" target="17" />
+      <module name="Validator" target="17" />
+    </bytecodeTargetLevel>
+  </component>
+</project>
