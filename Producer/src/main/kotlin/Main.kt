@@ -35,12 +35,12 @@ fun main() {
     val producer = createProducer(broker)
     val runId = UUID.randomUUID().toString()
     println("Producer Instance $runId")
-    for (i in 0..100_000) {
+    for (i in 0..1_500_000) {
         sendInputData(
             producer,
             inputTopic,
             jsonMapper.writeValueAsString(
-                InputData(i, runId, (1..10).random())
+                InputData(i, runId, 5)
             )
         )
     }

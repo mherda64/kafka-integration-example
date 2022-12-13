@@ -1,11 +1,14 @@
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.databind.util.StdDateFormat
+import com.fasterxml.jackson.datatype.jsr310.JSR310Module
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import org.apache.kafka.clients.consumer.Consumer
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.common.serialization.StringDeserializer
 import java.time.Duration
+import java.time.LocalDateTime
+import java.time.temporal.ChronoUnit
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 
@@ -21,6 +24,7 @@ private fun createConsumer(broker: String, consumerGroup: String): Consumer<Stri
 
 val jsonMapper = ObjectMapper().apply {
     registerKotlinModule()
+    registerModule(JSR310Module())
     disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
     setDateFormat(StdDateFormat())
 }
@@ -29,16 +33,16 @@ data class OutputData(
     val index: Int,
     val runId: String,
     val timeToProcess: Int,
-    val processedBy: String
+    val processedBy: String,
+    val processedDate: LocalDateTime
 )
 
 data class StatisticData(
     val runId: String,
     val numberOfRecords: Int,
     val avgProcessingTime: Double,
-    val processedByMap: Map<String, Int>
-
-
+    val processedByMap: Map<String, Int>,
+    val processingSeconds: Long
 )
 
 val outputTopic = "output-topic"
@@ -69,14 +73,15 @@ fun main() {
 
         }
 
-        if (i > 100) {
+        if (i > 10) {
             i = 0
             val map = consumedData.map {
                 StatisticData(
                     runId = it.key,
                     numberOfRecords = it.value.size,
                     avgProcessingTime = it.value.map { it.timeToProcess }.average(),
-                    processedByMap = it.value.groupBy { it.processedBy }.mapValues { it.value.size }
+                    processedByMap = it.value.groupBy { it.processedBy }.mapValues { it.value.size },
+                    processingSeconds = ChronoUnit.SECONDS.between(it.value.minOf { it.processedDate }, it.value.maxOf { it.processedDate })
                 )
             }
 

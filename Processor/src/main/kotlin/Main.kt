@@ -1,6 +1,7 @@
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.databind.util.StdDateFormat
+import com.fasterxml.jackson.datatype.jsr310.JSR310Module
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import org.apache.kafka.clients.consumer.Consumer
 import org.apache.kafka.clients.consumer.KafkaConsumer
@@ -10,6 +11,7 @@ import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.serialization.StringDeserializer
 import org.apache.kafka.common.serialization.StringSerializer
 import java.time.Duration
+import java.time.LocalDateTime
 import java.util.*
 
 private fun createProducer(broker: String): Producer<String, String> {
@@ -32,6 +34,7 @@ private fun createConsumer(broker: String, consumerGroup: String): Consumer<Stri
 
 val jsonMapper = ObjectMapper().apply {
     registerKotlinModule()
+    registerModule(JSR310Module())
     disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
     setDateFormat(StdDateFormat())
 }
@@ -46,7 +49,8 @@ data class OutputData(
     val index: Int,
     val runId: String,
     val timeToProcess: Int,
-    val processedBy: String
+    val processedBy: String,
+    val processedDate: LocalDateTime
 )
 
 val inputTopic = "input-topic"
@@ -69,12 +73,12 @@ fun main() {
         println("Polled ${records.count()} records")
         records.iterator().forEach {
             val inputData = jsonMapper.readValue(it.value(), InputData::class.java)
-            println("Read input data index [${inputData.index}], processing [${inputData.timeToProcess}] seconds")
+            println("Read input data index [${inputData.index}], processing [${inputData.timeToProcess}] miliseconds")
             Thread.sleep((inputData.timeToProcess).toLong())
             println("Processed input data index [${inputData.index}], sending to output topic")
             producer.send(ProducerRecord(
                 outputTopic,
-                jsonMapper.writeValueAsString(OutputData(inputData.index, inputData.runId, inputData.timeToProcess, instance))
+                jsonMapper.writeValueAsString(OutputData(inputData.index, inputData.runId, inputData.timeToProcess, instance, LocalDateTime.now()))
             ))
         }
     }
